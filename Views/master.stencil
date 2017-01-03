@@ -70,6 +70,10 @@
     padding: 15px;
     animation: fadeIn 1.5s;
   }
+  a
+  {
+    text-decoration-style: none;
+  }
   #map
   {
     animation: fadeIn 1.5s;
