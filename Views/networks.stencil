@@ -1,0 +1,37 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <style>
+  body
+  {
+    font-family: "Avenir Next", sans-serif;
+  }
+  dt
+  {
+    font-size: 16px;
+  }
+  dd
+  {
+    font-size: 14px;
+  }
+  #company
+  {
+    color: gray;
+  }
+  </style>
+  <title>Networks</title>
+</head>
+<body>
+  <dl>
+  {% for network in networks %}
+    <dt>{{network.name}}</dt>
+    <dd>&mdash;{{network.location.city}}, {{network.location.country}},
+      {% for company in network.company %}
+      <span id="company">{{company}}, </span>
+      {% endfor %}
+    </dd>
+  {% endfor %}
+  </dl>
+{% include "footer.stencil" %}
+</body>
+</html>

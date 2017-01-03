@@ -1,0 +1,10 @@
+{% extends "master.stencil" %}
+{% block body %}
+<h1> Is there bike share close to me?</h1>
+<script>
+window.onload = navigator.geolocation.getCurrentPosition(function(location) {
+  window.location = "http://localhost:8090/lat/" + location.coords.latitude + "/long/" + location.coords.longitude;
+});
+</script>
+{% endblock %}
+{% block title %}Is there bike share close to me? {% endblock %}

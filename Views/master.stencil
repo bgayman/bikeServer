@@ -1,0 +1,100 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <style>
+  @keyframes fadeIn
+  {
+    from { opacity: 0; }
+  }
+  @keyframes cry
+  {
+    0%   { transform: rotateZ(0deg); }
+    25%  { transform: rotateZ(-11deg);}
+    75%  { transform: rotateZ(11deg);}
+    100% { transform: rotateZ(0deg);}
+  }
+  body
+  {
+    padding: 0;
+    margin: 0;
+    font-family: "Avenir Next", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  dl
+  {
+    margin: auto;
+    max-width: 500px;
+    text-align: center;
+  }
+  dt
+  {
+    font-size: 30px;
+  }
+  dd
+  {
+    font-size: 25px;
+    margin-left: 0px;
+  }
+  h1
+  {
+    font-size: 40px;
+    text-align: center;
+    font-weight: normal;
+  }
+  h3
+  {
+    font-size: 35px;
+    font-weight: lighter;
+    text-align: center;
+  }
+  h2.happy
+  {
+    animation: fadeIn 1.5s;
+  }
+  h3.sad
+  {
+    animation: fadeIn 3.0s;
+  }
+  p.footer
+  {
+    max-width: 500px;
+    margin: auto;
+    text-align: center;
+  }
+  div.row
+  {
+    border: 0.5px;
+    border-style: solid;
+    border-width: thin;
+    border-radius: 12px;
+    border-color: lightgray;
+    padding: 15px;
+    animation: fadeIn 1.5s;
+  }
+  #map
+  {
+    animation: fadeIn 1.5s;
+  }
+  #company
+  {
+    color: gray;
+  }
+  #green
+  {
+    color: green;
+  }
+  #red
+  {
+    color: red;
+  }
+  #orange
+  {
+    color: orange;
+  }
+  </style>
+  <title>{% block title %}{% endblock %} - Bike Share</title>
+</head>
+<body>
+{% block body %}{% endblock %}
+{% include "footer.stencil" %}
+</body>
+</html>
