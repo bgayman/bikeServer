@@ -1,69 +1,37 @@
+/**
+ * Copyright IBM Corporation 2016
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ **/
+
+// Kitura-Starter contains examples for creating custom routes.
+import Foundation
 import Kitura
 import LoggerAPI
 import HeliumLogger
-import Foundation
-import SwiftyJSON
-import KituraStencil
+import CloudFoundryEnv
+import CloudFoundryDeploymentTracker
 
-HeliumLogger.use(.info)
-let router = Router()
-
-router.setDefault(templateEngine: StencilTemplateEngine())
-
-router.get("/")
-{ request, response, next in
-    defer{ next() }
-    try response.render("home", context: [:])
+do {
+    // HeliumLogger disables all buffering on stdout
+    HeliumLogger.use(LoggerMessageType.info)
+    let controller = try Controller()
+    Log.info("Server will be started on '\(controller.url)'.")
+    CloudFoundryDeploymentTracker(repositoryURL: "https://github.com/IBM-Bluemix/Kitura-Starter.git", codeVersion: nil).track()
+    Kitura.addHTTPServer(onPort: controller.port, with: controller.router)
+    // Start Kitura-Starter server
+    Kitura.run()
+} catch let error {
+    Log.error(error.localizedDescription)
+    Log.error("Oops... something went wrong. Server did not start!")
 }
-
-router.get("/networks")
-{ request, response, next in
-    defer{ next() }
-    let json = networkJSON?.rawValue as? [String: Any]
-    try response.render("networks", context: json ?? [:])
-}
-
-router.get("/networks/json")
-{ request, response, next in
-    defer{ next() }
-    response.send(json: networkJSON ?? JSON([]))
-}
-
-router.get("stations/:id")
-{ request, response, next in
-    defer{ next() }
-    guard let href = request.parameters["id"] else { return }
-    guard let stationJSON = stationJSON(href: href) else { return }
-    response.send(json: stationJSON)
-}
-
-router.get("json/lat/:lat/long/:long")
-{ request, response, next in
-    defer{ next() }
-    guard let lat = Double(request.parameters["lat"] ?? "a") else { return }
-    guard let long = Double(request.parameters["long"] ?? "a") else { return }
-    let coordinates = Coordinates(latitude: lat, longitude: long)
-    let (closeStations, network) = closebyStations(coordinates: coordinates)
-    guard case (.some, .some) = (closeStations, network) else { return }
-    var jsonDict: JSONDictionary = ["network": network!.jsonDict]
-    let closeDict: [JSONDictionary] = closeStations!.map{ $0.jsonDict }
-    jsonDict["stations"] = closeDict
-    let json = JSON(jsonDict)
-    response.send(json: json)
-}
-
-router.all("/static", middleware: StaticFileServer())
-
-router.get("/lat/:lat/long/:long")
-{ request, response, next in
-    defer{ next() }
-    guard let lat = Double(request.parameters["lat"] ?? "a") else { return }
-    guard let long = Double(request.parameters["long"] ?? "a") else { return }
-    let coordinates = Coordinates(latitude: lat, longitude: long)
-    let json = closebyStationsJSON(coordinates: coordinates)
-    let context = json.rawValue as? [String: Any]
-    try response.render("stations", context: context ?? [:])
-}
-
-Kitura.addHTTPServer(onPort: 8090, with: router)
-Kitura.run()

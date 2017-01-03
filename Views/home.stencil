@@ -7,4 +7,4 @@ window.onload = navigator.geolocation.getCurrentPosition(function(location) {
 });
 </script>
 {% endblock %}
-{% block title %}Is there bike share close to me? {% endblock %}
+{% block title %} Is there bike share close to me? {% endblock %}
