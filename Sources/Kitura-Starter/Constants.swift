@@ -19,13 +19,11 @@ struct Constants
         return dateFormatter
     }()
     
-    static let dateComponentsFormatter: DateComponentsFormatter =
+    static let displayDateFormatter: DateFormatter =
     {
-        let dateComponentsFormatter = DateComponentsFormatter()
-        dateComponentsFormatter.unitsStyle = .full
-        dateComponentsFormatter.includesApproximationPhrase = true
-        dateComponentsFormatter.maximumUnitCount = 1
-        dateComponentsFormatter.allowedUnits = [.month, .day, .hour, .minute, .second]
+        let dateComponentsFormatter = DateFormatter()
+        dateComponentsFormatter.dateStyle = .short
+        dateComponentsFormatter.timeStyle = .long
         return dateComponentsFormatter
     }()
     

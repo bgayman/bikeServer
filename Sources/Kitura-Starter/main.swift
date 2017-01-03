@@ -22,7 +22,8 @@ import HeliumLogger
 import CloudFoundryEnv
 import CloudFoundryDeploymentTracker
 
-do {
+do
+{
     // HeliumLogger disables all buffering on stdout
     HeliumLogger.use(LoggerMessageType.info)
     let controller = try Controller()
@@ -31,7 +32,9 @@ do {
     Kitura.addHTTPServer(onPort: controller.port, with: controller.router)
     // Start Kitura-Starter server
     Kitura.run()
-} catch let error {
+}
+catch let error
+{
     Log.error(error.localizedDescription)
     Log.error("Oops... something went wrong. Server did not start!")
 }

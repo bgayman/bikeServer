@@ -26,10 +26,8 @@ struct BikeStation
     
     var dateComponentText: String
     {
-        let timeInterval = self.timestamp.timeIntervalSince(Date())
-        let dateComponentString = Constants.dateComponentsFormatter.string(from: -timeInterval)
-        guard let dcString = dateComponentString else { return "" }
-        return "\(dcString) ago"
+        let dateComponentString = Constants.displayDateFormatter.string(from: self.timestamp)
+        return "Updated at \(dateComponentString)"
     }
     
     var distanceText: String
