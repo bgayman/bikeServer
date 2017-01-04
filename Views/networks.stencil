@@ -1,6 +1,6 @@
 {% extends "master.stencil" %}
 {% block body %}
-  <h1><a href="/">Is there bike share close to me?</a></h1>
+  <h1><a href="https://bike-share.mybluemix.net/">Is there bike share close to me?</a></h1>
   <dl>
   {% for network in networks %}
     <a href="/stations/{{ network.id }}"><div class="row">

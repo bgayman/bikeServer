@@ -1,6 +1,8 @@
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <meta property="og:image" content="/static/bike.png" />
+  <meta property="og:text" content="Is there bike share close to me?" />
   <style>
   @keyframes fadeIn
   {
