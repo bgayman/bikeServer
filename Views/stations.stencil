@@ -3,18 +3,16 @@
 {% if network %}
 <div id="Map" align="center" style="height:250px;"></div>
 {% endif %}
-<h1> Is there bike share close to me?</h1>
-{% if network %}
-<h3 class="happy">🚲 Yes, yes there are {{network.name}}s close to you. 🚲</h3>
-{% else %}
-<h3 class="sad">🙈 No, there's no bike share close to you. 🙈</h3>
-{% endif %}
+<h1><a href="/">Is there bike share close to me?</a></h1>
+{% block answer %}
+
+{% endblock %}
 <dl>
 {% for station in stations %}
-  <div class="row">
+  <a href="https://bike-share.mybluemix.net/network/{{ network.id }}/station/{{ station.id }}"><div class="row">
   <dt><span id={{station.color}}>•</span>&nbsp;{{station.name}}</dt>
   <dd>{{station.status}} <br /> {{station.updated}} <br /> {{station.distance}}</dd>
-  </div>
+</div></a>
   <br />
 {% endfor %}
 </dl>
@@ -22,7 +20,11 @@
 <br />
 <script src="/static/OpenLayers.js"></script>
 <script>
+    {% if currentLocation %}
     var zoom           = 14;
+    {% else %}
+    var zoom           = 12;
+    {% endif %}
 
     var fromProjection = new OpenLayers.Projection("EPSG:4326");   // Transform from WGS 1984
     var toProjection   = new OpenLayers.Projection("EPSG:900913"); // to Spherical Mercator Projection
@@ -43,22 +45,9 @@
     marker.display(true);
     markers.addMarker(marker);
     {% endfor %}
-
-    var lat            = {{ currentLocation.latitude }};
-    var lon            = {{ currentLocation.longitude }};
-    var position       = new OpenLayers.LonLat(lon, lat).transform( fromProjection, toProjection);
-    var marker         = new OpenLayers.Marker(position);
-    marker.setUrl('/static/dot.png');
-    marker.display(true);
-    markers.addMarker(marker);
-    map.setCenter(position, zoom);
-
+    {% block marker %}
+    {% endblock %}
 </script>
 {% endblock %}
 {% block title %}
-{% if network %}
-Yes, yes there is.
-{% else %}
-No, no there's not.
-{% endif %}
 {% endblock %}

@@ -19,6 +19,7 @@ import SwiftyJSON
 import LoggerAPI
 import CloudFoundryEnv
 import KituraStencil
+import Foundation
 
 public class Controller {
     
@@ -69,12 +70,54 @@ public class Controller {
             response.send(json: networkJSON ?? JSON([]))
         }
         
-        router.get("stations/:id")
+        router.get("stations/:id/json")
         { request, response, next in
             defer{ next() }
             guard let href = request.parameters["id"] else { return }
             guard let stationJSON = stationJSON(href: href) else { return }
             response.send(json: stationJSON)
+        }
+        
+        router.get("stations/:id")
+        { request, response, next in
+            defer{ next() }
+            guard let href = request.parameters["id"] else { return }
+            guard let stationJSON = stationJSON(href: href) else { return }
+            var context = stationJSON.rawValue as? JSONDictionary
+            guard let stationsDicts = stationJSON["network"]["stations"].rawValue as? [JSONDictionary] else { return }
+            var stations = stationsDicts.flatMap(BikeStation.init)
+            if let data = try? Data(contentsOf: timeZoneURL(lat: stationJSON["network"]["location"]["latitude"].doubleValue, long: stationJSON["network"]["location"]["longitude"].doubleValue))
+            {
+                let timeZoneJSON = JSON(data: data)
+                context?["stations"] = stations.map{ $0.jsonDict(timeZoneID: timeZoneJSON["timeZoneId"].stringValue) }
+            }
+            else
+            {
+                context?["stations"] = stations.map{ $0.jsonDict }
+            }
+            try response.render("multipleStations", context: context ?? [:])
+        }
+        
+        router.get("network/:networkID/station/:stationID")
+        { request, response, next in
+            defer{ next() }
+            guard let href = request.parameters["networkID"] else { return }
+            guard let stationJSON = stationJSON(href: href) else { return }
+            guard let stationID = request.parameters["stationID"] else { return }
+            guard let stationsDicts = stationJSON["network"]["stations"].rawValue as? [JSONDictionary] else { return }
+            var context = stationJSON.rawValue as? JSONDictionary
+            var stations = stationsDicts.flatMap(BikeStation.init)
+            stations = stations.filter({ $0.id == stationID })
+            if let data = try? Data(contentsOf: timeZoneURL(lat: stationJSON["network"]["location"]["latitude"].doubleValue, long: stationJSON["network"]["location"]["longitude"].doubleValue))
+            {
+                let timeZoneJSON = JSON(data: data)
+                context?["stations"] = stations.map{ $0.jsonDict(timeZoneID: timeZoneJSON["timeZoneId"].stringValue) }
+            }
+            else
+            {
+                context?["stations"] = stations.map{ $0.jsonDict }
+            }
+            try response.render("singleStation", context: context ?? [:])
         }
         
         router.get("json/lat/:lat/long/:long")
@@ -102,7 +145,7 @@ public class Controller {
             let coordinates = Coordinates(latitude: lat, longitude: long)
             let json = closebyStationsJSON(coordinates: coordinates)
             let context = json.rawValue as? [String: Any]
-            try response.render("stations", context: context ?? [:])
+            try response.render("multipleStations", context: context ?? [:])
         }
 
     }

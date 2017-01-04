@@ -1,0 +1,10 @@
+{% extends "stations.stencil" %}
+{% block marker %}
+map.setCenter(position, zoom);
+{% endblock %}
+{% block answer %}
+<h3 class="happy"><a href="/stations/{{ network.id }}">🚲 {{network.name}}s 🚲</a></h3>
+{% endblock %}
+{% block title %}
+🚲 {{network.name}}s 🚲
+{% endblock %}

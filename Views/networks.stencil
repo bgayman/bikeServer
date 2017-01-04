@@ -1,37 +1,20 @@
-<html>
-<head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-  <style>
-  body
-  {
-    font-family: "Avenir Next", sans-serif;
-  }
-  dt
-  {
-    font-size: 16px;
-  }
-  dd
-  {
-    font-size: 14px;
-  }
-  #company
-  {
-    color: gray;
-  }
-  </style>
-  <title>Networks</title>
-</head>
-<body>
+{% extends "master.stencil" %}
+{% block body %}
+  <h1><a href="/">Is there bike share close to me?</a></h1>
   <dl>
   {% for network in networks %}
+    <a href="/stations/{{ network.id }}"><div class="row">
     <dt>{{network.name}}</dt>
     <dd>&mdash;{{network.location.city}}, {{network.location.country}},
       {% for company in network.company %}
       <span id="company">{{company}}, </span>
       {% endfor %}
     </dd>
+    </div></a>
+    <br />
   {% endfor %}
   </dl>
-{% include "footer.stencil" %}
-</body>
-</html>
+{% endblock %}
+{% block title %}
+Networks
+{% endblock %}

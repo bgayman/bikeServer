@@ -80,6 +80,11 @@
   a
   {
     text-decoration: none;
+    color: black;
+  }
+  a.gray
+  {
+    color: darkgray;
   }
   form
   {

@@ -1,0 +1,43 @@
+{% extends "stations.stencil" %}
+{% block marker %}
+{% if currentLocation %}
+var lat            = {{ currentLocation.latitude }};
+var lon            = {{ currentLocation.longitude }};
+var position       = new OpenLayers.LonLat(lon, lat).transform( fromProjection, toProjection);
+var marker         = new OpenLayers.Marker(position);
+marker.setUrl('/static/dot.png');
+marker.display(true);
+markers.addMarker(marker);
+{% else %}
+var lat            = {{ network.location.latitude }};
+var lon            = {{ network.location.longitude }};
+var position       = new OpenLayers.LonLat(lon, lat).transform( fromProjection, toProjection);
+var marker         = new OpenLayers.Marker(position);
+marker.setUrl('/static/dot.png');
+marker.display(false);
+markers.addMarker(marker);
+{% endif %}
+map.setCenter(position, zoom);
+{% endblock %}
+{% block answer %}
+{% if currentLocation %}
+{% if network %}
+<h3 class="happy">🚲 Yes, yes there are <a href="/stations/{{ network.id }}">{{network.name}}s</a> close to you. 🚲</h3>
+{% else %}
+<h3 class="sad">🙈 No, there's no bike share close to you. 🙈</h3>
+{% endif %}
+{% else %}
+<h3 class="happy"><a href="/stations/{{ network.id }}">🚲 {{network.name}}s 🚲</a></h3>
+{% endif %}
+{% endblock %}
+{% block title %}
+{% if currentLocation %}
+{% if network %}
+🚲 Yes, yes there are {{network.name}}s close to you. 🚲
+{% else %}
+🙈 No, there's no bike share close to you. 🙈
+{% endif %}
+{% else %}
+🚲 {{network.name}}s 🚲
+{% endif %}
+{% endblock %}
