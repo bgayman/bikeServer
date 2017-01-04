@@ -16,7 +16,7 @@
   <br />
 {% endfor %}
 </dl>
-<br />
+<a href="https://bike-share.mybluemix.net/networks"><div class="row"><p>View all networks</p></div></a>
 <br />
 <script src="/static/OpenLayers.js"></script>
 <script>

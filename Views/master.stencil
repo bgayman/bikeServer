@@ -78,6 +78,16 @@
     border-color: lightgray;
     padding: 15px;
     animation: fadeIn 1.5s;
+    max-width: 500px;
+    margin: auto;
+    text-align: center;
+  }
+  div.linebreak
+  {
+    margin: auto;
+    max-width: 500px;
+    height: 0.5px;
+    background-color: lightgray;
   }
   a
   {
