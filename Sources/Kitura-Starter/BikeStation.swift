@@ -54,6 +54,19 @@ struct BikeStation
         }
         return "green"
     }
+    
+    func dateText(timeZoneID: String) -> String
+    {
+        guard let timeZone = TimeZone(identifier: timeZoneID) else
+        {
+            let dateComponentString = Constants.displayDateFormatter.string(from: self.timestamp)
+            return "Updated at \(dateComponentString)"
+        }
+        Constants.displayDateFormatter.timeZone = timeZone
+        let dateComponentString = Constants.displayDateFormatter.string(from: self.timestamp)
+        Constants.displayDateFormatter.timeZone = nil
+        return "Updated at \(dateComponentString)"
+    }
 }
 
 extension BikeStation
@@ -99,6 +112,13 @@ extension BikeStation
     var json: JSON
     {
         return JSON(self.jsonDict)
+    }
+    
+    func jsonDict(timeZoneID: String) -> JSONDictionary
+    {
+        var jsonDict = self.jsonDict
+        jsonDict["updated"] = self.dateText(timeZoneID: timeZoneID)
+        return jsonDict
     }
 }
 

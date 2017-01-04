@@ -64,9 +64,23 @@ func closebyStationsJSON(coordinates: Coordinates) -> JSON
     {
         jsonDict = ["network": network!.jsonDict]
     }
-    let closeDict: [JSONDictionary] = closeStations!.map{ $0.jsonDict }
+    let closeDict: [JSONDictionary]
+    if let data = try? Data(contentsOf: timeZoneURL(lat: coordinates.latitude, long: coordinates.longitude))
+    {
+        let timeZoneJSON = JSON(data: data)
+        closeDict = closeStations!.map{ $0.jsonDict(timeZoneID: timeZoneJSON["timeZoneId"].stringValue) }
+    }
+    else
+    {
+        closeDict = closeStations!.map{ $0.jsonDict }
+    }
     jsonDict["stations"] = closeDict
     jsonDict["currentLocation"] = ["latitude": coordinates.latitude, "longitude": coordinates.longitude]
     let json = JSON(jsonDict)
     return json
+}
+
+func timeZoneURL(lat: Double, long: Double) -> URL
+{
+    return URL(string: "https://maps.googleapis.com/maps/api/timezone/json?location=\(lat),\(long)&timestamp=0&key=AIzaSyC7QULaKAQL2T8wEwGweWIrYpA8IthppiE")!
 }
