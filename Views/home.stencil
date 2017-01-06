@@ -7,7 +7,7 @@
 </form>
 <br />
 <br />
-<a href="https://bike-share.mybluemix.net/networks"><div class="row"><p>View all networks</p></div></a>
+<dl><a href="https://bike-share.mybluemix.net/networks"><div class="row"><dt><span id="company">View all networks</span></dt></div></a></dl>
 <br />
 <script>
 window.onload = navigator.geolocation.getCurrentPosition(function(location) {
