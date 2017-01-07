@@ -1,11 +1,15 @@
 {
   "applinks": {
-    "apps": [],
-    "details": {
-      "appID": "8DDUQH2RUD.com.bradgayman.BikeShare",
-      "paths": [
-        "*"
-      ]
-    }
+    "apps": [
+
+    ],
+    "details": [
+      {
+        "appID": "8DDUQH2RUD.com.bradgayman.BikeShare",
+        "paths": [
+          "*"
+        ]
+      }
+    ]
   }
 }
