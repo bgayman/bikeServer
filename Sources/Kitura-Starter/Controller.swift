@@ -60,7 +60,7 @@ public class Controller {
         router.get("/apple-app-site-association")
         { request, response, next in
             defer{ next() }
-            let json = JSON(["applinks": ["apps":[], "details": ["appID": "8DDUQH2RUD.com.bradgayman.BikeShare", "paths": ["*"]]]])
+            let json = JSON(["applinks": ["apps":[], "details": [["appID": "8DDUQH2RUD.com.bradgayman.BikeShare", "paths": ["*"]]]]])
             response.send(json: json)
         }
         
