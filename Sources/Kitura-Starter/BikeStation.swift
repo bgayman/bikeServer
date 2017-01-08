@@ -17,6 +17,7 @@ struct BikeStation
     let freeBikes: Int
     let emptySlots: Int
     let id: String
+    let address: String?
     var distance: Double?
     
     var statusDisplayText: String
@@ -86,11 +87,34 @@ extension BikeStation
             return nil
         }
         self.name = name
-        self.timestamp = timestamp
         self.coordinates = Coordinates(latitude: latitude, longitude: longitude)
         self.freeBikes = freeBikes
         self.emptySlots = emptySlots
         self.id = id
+        if let extras = json["extra"] as? JSONDictionary
+        {
+            if let address = extras["address"] as? String
+            {
+                self.address = address
+            }
+            else
+            {
+                self.address = nil
+            }
+            if let lastUpdated = extras["last_updated"] as? Double
+            {
+                self.timestamp = Date(timeIntervalSince1970: lastUpdated)
+            }
+            else
+            {
+                self.timestamp = timestamp
+            }
+        }
+        else
+        {
+            self.address = nil
+            self.timestamp = timestamp
+        }
     }
     
     var jsonDict: JSONDictionary
@@ -105,7 +129,8 @@ extension BikeStation
                 "status": self.statusDisplayText,
                 "updated": self.dateComponentText,
                 "distance": self.distanceText,
-                "color": self.color
+                "color": self.color,
+                "address": self.address ?? ""
         ]
     }
     

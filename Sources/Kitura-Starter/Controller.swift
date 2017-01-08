@@ -57,6 +57,13 @@ public class Controller {
             try response.render("home", context: [:])
         }
         
+        router.get("/apple-app-site-association")
+        { request, response, next in
+            defer{ next() }
+            let json = JSON(["applinks": ["apps":[], "details": [["appID": "8DDUQH2RUD.com.bradgayman.BikeShare", "paths": ["*"]]]]])
+            response.send(json: json)
+        }
+        
         router.get("/networks")
         { request, response, next in
             defer{ next() }
@@ -136,7 +143,6 @@ public class Controller {
         }
         
         router.all("/static", middleware: StaticFileServer())
-        router.all("/", middleware: StaticFileServer())
         
         router.get("/lat/:lat/long/:long")
         { request, response, next in
