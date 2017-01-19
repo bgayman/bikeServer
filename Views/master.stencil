@@ -25,7 +25,7 @@
   {
     padding: 0;
     margin: 0;
-    font-family: "Avenir Next", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   }
   dl
   {
@@ -116,7 +116,7 @@
     border-radius: 4px;
     font-size: 35px;
     max-width: 500px;
-    font-family: "Avenir Next", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     text-align: center;
   }
   #map
