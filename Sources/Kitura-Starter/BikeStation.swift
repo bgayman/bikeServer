@@ -14,15 +14,18 @@ struct BikeStation
     let name: String
     let timestamp: Date
     let coordinates: Coordinates
-    let freeBikes: Int
-    let emptySlots: Int
+    let freeBikes: Int?
+    let emptySlots: Int?
     let id: String
     let address: String?
     var distance: Double?
     
     var statusDisplayText: String
     {
-        return "\(self.freeBikes) 🚲, \(emptySlots) 🆓"
+        guard let freeBikes = self.freeBikes,
+            let emptySlots = self.emptySlots
+            else { return "🤷‍♀️" }
+        return "\(freeBikes) 🚲, \(emptySlots) 🆓"
     }
     
     var dateComponentText: String
@@ -40,16 +43,22 @@ struct BikeStation
     
     var color: String
     {
-        let totalDocks = self.freeBikes + self.emptySlots
-        if self.freeBikes == 0 || self.emptySlots == 0
-        {
-            return "red"
-        }
-        if Double(self.freeBikes) / Double(totalDocks) < 0.25
+        guard let freeBikes = self.freeBikes,
+              let emptySlots = self.emptySlots
+        else
         {
             return "orange"
         }
-        else if Double(self.emptySlots) / Double(totalDocks) < 0.10
+        let totalDocks = freeBikes + emptySlots
+        if freeBikes == 0 || emptySlots == 0
+        {
+            return "red"
+        }
+        if Double(freeBikes) / Double(totalDocks) < 0.25
+        {
+            return "orange"
+        }
+        else if Double(emptySlots) / Double(totalDocks) < 0.10
         {
             return "orange"
         }
@@ -78,14 +87,14 @@ extension BikeStation
             let timeString = json["timestamp"] as? String,
             let timestamp = Constants.dateFormatter.date(from: timeString),
             let longitude = json["longitude"] as? Double,
-            let freeBikes = json["free_bikes"] as? Int,
             let latitude = json["latitude"] as? Double,
-            let emptySlots = json["empty_slots"] as? Int,
             let id = json["id"] as? String
             else
         {
             return nil
         }
+        let emptySlots = json["empty_slots"] as? Int
+        let freeBikes = json["free_bikes"] as? Int
         self.name = name
         self.coordinates = Coordinates(latitude: latitude, longitude: longitude)
         self.freeBikes = freeBikes
@@ -122,9 +131,9 @@ extension BikeStation
         return ["name": self.name,
                 "timestamp": Constants.dateFormatter.string(from: self.timestamp),
                 "longitude": self.coordinates.longitude,
-                "free_bikes": self.freeBikes,
+                "free_bikes": self.freeBikes ?? 0,
                 "latitude": self.coordinates.latitude,
-                "empty_slots": self.emptySlots,
+                "empty_slots": self.emptySlots ?? 0,
                 "id": self.id,
                 "status": self.statusDisplayText,
                 "updated": self.dateComponentText,
