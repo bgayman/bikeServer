@@ -142,6 +142,39 @@ public class Controller {
             response.send(json: json)
         }
         
+        router.get("json/network/:href/lat/:lat/long/:long")
+        { request, response, next in
+            defer{ next() }
+            guard let lat = Double(request.parameters["lat"] ?? "a"),
+                  let long = Double(request.parameters["long"] ?? "a"),
+                  let href = request.parameters["href"],
+                  let network = network(for: href)
+            else { return }
+            let coordinates = Coordinates(latitude: lat, longitude: long)
+            let closeStations = closebyStations(coordinates: coordinates, network: network)
+            guard closeStations != nil else { return }
+            var jsonDict: JSONDictionary = ["network": network.jsonDict]
+            let closeDict: [JSONDictionary] = closeStations!.map{ $0.jsonDict }
+            jsonDict["stations"] = closeDict
+            let json = JSON(jsonDict)
+            response.send(json: json)
+        }
+        
+        router.get("json/lat/:lat/long/:long")
+        { request, response, next in
+            defer{ next() }
+            guard let lat = Double(request.parameters["lat"] ?? "a") else { return }
+            guard let long = Double(request.parameters["long"] ?? "a") else { return }
+            let coordinates = Coordinates(latitude: lat, longitude: long)
+            let (closeStations, network) = closebyStations(coordinates: coordinates)
+            guard case (.some, .some) = (closeStations, network) else { return }
+            var jsonDict: JSONDictionary = ["network": network!.jsonDict]
+            let closeDict: [JSONDictionary] = closeStations!.map{ $0.jsonDict }
+            jsonDict["stations"] = closeDict
+            let json = JSON(jsonDict)
+            response.send(json: json)
+        }
+        
         router.all("/static", middleware: StaticFileServer())
         
         router.get("/lat/:lat/long/:long")

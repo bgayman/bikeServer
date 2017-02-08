@@ -22,6 +22,11 @@ var networks: [BikeNetwork]?
     return networksJSON.flatMap(BikeNetwork.init)
 }
 
+func network(for href: String) -> BikeNetwork?
+{
+    return networks.filter { $0.href == href }.first
+}
+
 func stationJSON(href: String) -> JSON?
 {
     guard let url = URL(string: "\(Constants.BaseURL)\(href)") else { return nil }
@@ -53,6 +58,21 @@ func closebyStations(coordinates: Coordinates) -> ([BikeStation]?, BikeNetwork?)
         return station
     }
     return (closeStations, closestNetwork)
+}
+
+func closebyStations(coordinates: Coordinates, network: BikeNetwork) -> [BikeStation]?
+{
+    guard let stations = stations(href: closestNetwork.id) else { return nil }
+    let sortedStations = stations.sorted{ $0.coordinates.distance(to: coordinates) < $1.coordinates.distance(to: coordinates) }
+    guard let closestStation = sortedStations.first else { return [] }
+    var closeStations = Array(sortedStations.prefix(5))
+    closeStations = closeStations.map
+    {
+        var station = $0
+        station.distance = station.coordinates.distance(to: coordinates)
+        return station
+    }
+    return closeStations
 }
 
 func closebyStationsJSON(coordinates: Coordinates) -> JSON
