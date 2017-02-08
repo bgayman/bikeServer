@@ -9,9 +9,16 @@
 import Foundation
 import SwiftyJSON
 
+var networkData: Data?
+
 var networkJSON: JSON?
 {
+    if let networkData = networkData
+    {
+        return JSON(data: networkData)
+    }
     guard let data = try? Data(contentsOf: Constants.NetworkURL) else { return nil }
+    networkData = data
     return JSON(data: data)
 }
 
@@ -22,9 +29,10 @@ var networks: [BikeNetwork]?
     return networksJSON.flatMap(BikeNetwork.init)
 }
 
-func network(for href: String) -> BikeNetwork?
+func network(for id: String) -> BikeNetwork?
 {
-    return networks.filter { $0.href == href }.first
+    guard let networks = networks else { return nil }
+    return networks.filter { $0.id == id }.first
 }
 
 func stationJSON(href: String) -> JSON?
@@ -62,9 +70,9 @@ func closebyStations(coordinates: Coordinates) -> ([BikeStation]?, BikeNetwork?)
 
 func closebyStations(coordinates: Coordinates, network: BikeNetwork) -> [BikeStation]?
 {
-    guard let stations = stations(href: closestNetwork.id) else { return nil }
+    guard let stations = stations(href: network.href) else { return nil }
     let sortedStations = stations.sorted{ $0.coordinates.distance(to: coordinates) < $1.coordinates.distance(to: coordinates) }
-    guard let closestStation = sortedStations.first else { return [] }
+    guard sortedStations.first != nil else { return [] }
     var closeStations = Array(sortedStations.prefix(5))
     closeStations = closeStations.map
     {

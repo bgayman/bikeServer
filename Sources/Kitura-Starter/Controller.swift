@@ -142,13 +142,13 @@ public class Controller {
             response.send(json: json)
         }
         
-        router.get("json/network/:href/lat/:lat/long/:long")
+        router.get("json/network/:id/lat/:lat/long/:long")
         { request, response, next in
             defer{ next() }
             guard let lat = Double(request.parameters["lat"] ?? "a"),
                   let long = Double(request.parameters["long"] ?? "a"),
-                  let href = request.parameters["href"],
-                  let network = network(for: href)
+                  let networkID = request.parameters["id"],
+                  let network = network(for: networkID)
             else { return }
             let coordinates = Coordinates(latitude: lat, longitude: long)
             let closeStations = closebyStations(coordinates: coordinates, network: network)
