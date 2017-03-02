@@ -114,6 +114,7 @@ public class Controller {
                 let stationID = request.parameters["stationID"]
                 else { return }
             var context = JSONDictionary()
+            context["network"] = network.jsonDict
             guard var stats = stations(href: href) else { return }
             stats = stats.filter({ $0.id == stationID })
             if let data = try? Data(contentsOf: timeZoneURL(lat: network.location.coordinates.latitude, long: network.location.coordinates.longitude))
