@@ -145,6 +145,7 @@ public class Controller {
         router.get("json/network/:id/lat/:lat/long/:long")
         { request, response, next in
             defer{ next() }
+            
             guard let lat = Double(request.parameters["lat"] ?? "a"),
                   let long = Double(request.parameters["long"] ?? "a"),
                   let networkID = request.parameters["id"],

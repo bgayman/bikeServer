@@ -8,6 +8,7 @@ struct BikeNetwork
     let id: String
     let location: BikeNetworkLocation
     let name: String
+    let gbfsHref: URL?
     
     var locationDisplayName: String
     {
@@ -49,6 +50,8 @@ extension BikeNetwork
         self.id = id
         self.location = location
         self.name = name
+        let hrefString = json["gbfs_href"] as? String
+        self.gbfsHref = URL(string: hrefString ?? " ")
     }
 }
 

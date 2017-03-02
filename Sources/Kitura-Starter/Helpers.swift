@@ -42,11 +42,74 @@ func stationJSON(href: String) -> JSON?
     return JSON(data: data)
 }
 
+func feeds(gbfsHref: URL) -> [GBFSFeed]?
+{
+    guard let data = try? Data(contentsOf: gbfsHref) else { return nil }
+    let feedsJSON = JSON(data: data)
+    guard let jsonArray = feedsJSON["data"]["en"]["feeds"].arrayObject as? [JSONDictionary] else { return nil }
+    return jsonArray.flatMap(GBFSFeed.init)
+}
+
+func stationInfo(feeds: [GBFSFeed]) -> [GBFSStationInformation]?
+{
+    let stationFeed = feeds.filter { $0.type == .stationInformation }
+    guard let stationInfoFeed = stationFeed.first,
+          let data = try? Data(contentsOf: stationInfoFeed.url)
+    else { return nil }
+    let stationInfoJSON = JSON(data: data)
+    guard let jsonArray = stationInfoJSON["data"]["stations"].arrayObject as? [JSONDictionary] else { return nil }
+    return jsonArray.flatMap(GBFSStationInformation.init)
+}
+
+func stationStatus(with feeds: [GBFSFeed], stationsDict: [String: GBFSStationInformation], stations: [BikeStation]) -> [BikeStation]?
+{
+    var stationsDict = stationsDict
+    let stationFeed = feeds.filter { $0.type == .stationStatus }
+    guard let stationStatusFeed = stationFeed.first,
+          let data = try? Data(contentsOf: stationStatusFeed.url)
+    else { return nil }
+    let stationStatusJSON = JSON(data: data)
+    guard let jsonArray = stationStatusJSON["data"]["stations"].arrayObject as? [JSONDictionary] else { return nil }
+    let stationStatuses = jsonArray.flatMap(GBFSStationStatus.init)
+    for stationStatus in stationStatuses
+    {
+        stationsDict[stationStatus.stationID]?.stationStatus = stationStatus
+    }
+    var newStationsDict = [String: GBFSStationInformation]()
+    for (_, value) in stationsDict
+    {
+        newStationsDict[value.name] = value
+    }
+    let newStations: [BikeStation] = stations.map
+    {
+        var station = $0
+        station.gbfsStationInformation = newStationsDict[station.name]
+        return station
+    }
+    return newStations
+}
+
 func stations(href: String) -> [BikeStation]?
 {
     guard let json = stationJSON(href: href) else { return nil }
     guard let stationsJSON = json["network"]["stations"].rawValue as? [JSONDictionary] else { return nil }
-    return stationsJSON.flatMap(BikeStation.init)
+    let stations = stationsJSON.flatMap(BikeStation.init)
+    guard let network = network(for: href),
+          let gbfsHref = network.gbfsHref
+    else { return stations}
+    
+    guard let gbfsFeeds = feeds(gbfsHref: gbfsHref),
+          let stationInformation = stationInfo(feeds: gbfsFeeds)
+    else { return stations }
+    
+    let stationsDict: [String: GBFSStationInformation] = stationInformation.reduce([String: GBFSStationInformation]())
+    { (result, stationInformation) in
+        var result = result
+        result[stationInformation.stationID] = stationInformation
+        return result
+    }
+    guard let newStations = stationStatus(with: gbfsFeeds, stationsDict: stationsDict, stations: stations) else { return stations }
+    return newStations
 }
 
 func closebyStations(coordinates: Coordinates) -> ([BikeStation]?, BikeNetwork?)
@@ -70,7 +133,7 @@ func closebyStations(coordinates: Coordinates) -> ([BikeStation]?, BikeNetwork?)
 
 func closebyStations(coordinates: Coordinates, network: BikeNetwork) -> [BikeStation]?
 {
-    guard let stations = stations(href: network.href) else { return nil }
+    guard let stations = stations(href: network.id) else { return nil }
     let sortedStations = stations.sorted{ $0.coordinates.distance(to: coordinates) < $1.coordinates.distance(to: coordinates) }
     guard sortedStations.first != nil else { return [] }
     var closeStations = Array(sortedStations.prefix(5))

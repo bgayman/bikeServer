@@ -19,13 +19,29 @@ struct BikeStation
     let id: String
     let address: String?
     var distance: Double?
+    var gbfsStationInformation: GBFSStationInformation? = nil
     
     var statusDisplayText: String
     {
         guard let freeBikes = self.freeBikes,
             let emptySlots = self.emptySlots
             else { return "🤷‍♀️" }
-        return "\(freeBikes) 🚲, \(emptySlots) 🆓"
+        var status = "\(freeBikes) 🚲, \(emptySlots) 🆓"
+        if self.gbfsStationInformation?.stationStatus?.isRenting == false ||
+            self.gbfsStationInformation?.stationStatus?.isInstalled == false
+        {
+            return "🚳 Station Closed"
+        }
+        else if self.gbfsStationInformation?.stationStatus?.numberOfBikesDisabled ?? 0 > 0
+            
+        {
+            status += ", \(self.gbfsStationInformation?.stationStatus?.numberOfBikesDisabled ?? 0) 🚳"
+        }
+        else if self.gbfsStationInformation?.stationStatus?.numberOfDocksDisabled ?? 0 > 0
+        {
+            status += ", \(self.gbfsStationInformation?.stationStatus?.numberOfDocksDisabled ?? 0) ⛔️"
+        }
+        return status
     }
     
     var dateComponentText: String
@@ -139,7 +155,8 @@ extension BikeStation
                 "updated": self.dateComponentText,
                 "distance": self.distanceText,
                 "color": self.color,
-                "address": self.address ?? ""
+                "address": self.address ?? "",
+                "gbfsStationInformation": self.gbfsStationInformation?.jsonDict ?? [:]
         ]
     }
     
