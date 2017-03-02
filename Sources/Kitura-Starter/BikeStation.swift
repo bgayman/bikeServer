@@ -156,7 +156,7 @@ extension BikeStation
                 "distance": self.distanceText,
                 "color": self.color,
                 "address": self.address ?? "",
-                "gbfsStationInformation": self.gbfsStationInformation?.jsonDict ?? [:]
+                "gbfsStationInformation": self.gbfsStationInformation?.jsonDict ?? JSONDictionary()
         ]
     }
     

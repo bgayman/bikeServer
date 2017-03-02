@@ -88,43 +88,44 @@ public class Controller {
         router.get("stations/:id")
         { request, response, next in
             defer{ next() }
-            guard let href = request.parameters["id"] else { return }
-            guard let stationJSON = stationJSON(href: href) else { return }
-            var context = stationJSON.rawValue as? JSONDictionary
-            guard let stationsDicts = stationJSON["network"]["stations"].rawValue as? [JSONDictionary] else { return }
-            var stations = stationsDicts.flatMap(BikeStation.init)
-            if let data = try? Data(contentsOf: timeZoneURL(lat: stationJSON["network"]["location"]["latitude"].doubleValue, long: stationJSON["network"]["location"]["longitude"].doubleValue))
+            guard let href = request.parameters["id"],
+                let network = network(for: href)
+                else { return }
+            var context = JSONDictionary()
+            guard let stations = stations(href: href) else { return }
+            context["network"] = network.jsonDict
+            if let data = try? Data(contentsOf: timeZoneURL(lat: network.location.coordinates.latitude, long: network.location.coordinates.longitude))
             {
                 let timeZoneJSON = JSON(data: data)
-                context?["stations"] = stations.map{ $0.jsonDict(timeZoneID: timeZoneJSON["timeZoneId"].stringValue) }
+                context["stations"] = stations.map{ $0.jsonDict(timeZoneID: timeZoneJSON["timeZoneId"].stringValue) }
             }
             else
             {
-                context?["stations"] = stations.map{ $0.jsonDict }
+                context["stations"] = stations.map{ $0.jsonDict }
             }
-            try response.render("multipleStations", context: context ?? [:])
+            try response.render("multipleStations", context: context)
         }
         
         router.get("network/:networkID/station/:stationID")
         { request, response, next in
             defer{ next() }
-            guard let href = request.parameters["networkID"] else { return }
-            guard let stationJSON = stationJSON(href: href) else { return }
-            guard let stationID = request.parameters["stationID"] else { return }
-            guard let stationsDicts = stationJSON["network"]["stations"].rawValue as? [JSONDictionary] else { return }
-            var context = stationJSON.rawValue as? JSONDictionary
-            var stations = stationsDicts.flatMap(BikeStation.init)
-            stations = stations.filter({ $0.id == stationID })
-            if let data = try? Data(contentsOf: timeZoneURL(lat: stationJSON["network"]["location"]["latitude"].doubleValue, long: stationJSON["network"]["location"]["longitude"].doubleValue))
+            guard let href = request.parameters["networkID"],
+                let network = network(for: href),
+                let stationID = request.parameters["stationID"]
+                else { return }
+            var context = JSONDictionary()
+            guard var stats = stations(href: href) else { return }
+            stats = stats.filter({ $0.id == stationID })
+            if let data = try? Data(contentsOf: timeZoneURL(lat: network.location.coordinates.latitude, long: network.location.coordinates.longitude))
             {
                 let timeZoneJSON = JSON(data: data)
-                context?["stations"] = stations.map{ $0.jsonDict(timeZoneID: timeZoneJSON["timeZoneId"].stringValue) }
+                context["stations"] = stats.map{ $0.jsonDict(timeZoneID: timeZoneJSON["timeZoneId"].stringValue) }
             }
             else
             {
-                context?["stations"] = stations.map{ $0.jsonDict }
+                context["stations"] = stats.map{ $0.jsonDict }
             }
-            try response.render("singleStation", context: context ?? [:])
+            try response.render("singleStation", context: context)
         }
         
         router.get("json/lat/:lat/long/:long")

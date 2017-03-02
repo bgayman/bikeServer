@@ -34,9 +34,9 @@ struct GBFSStationInformation
             "cross_street": self.crossStreet ?? "",
             "region_id": self.regionID ?? "",
             "post_code": self.postCode ?? "",
-            "rental_methods": self.rentalMethods ?? [],
+            "rental_methods": self.rentalMethods ?? [String](),
             "capacity": self.capacity ?? 0,
-            "stationStatus": self.stationStatus?.jsonDict ?? [:]
+            "stationStatus": self.stationStatus?.jsonDict ?? JSONDictionary()
         ]
     }
 }
