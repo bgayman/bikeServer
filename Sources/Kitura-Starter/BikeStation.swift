@@ -126,9 +126,9 @@ extension BikeStation
             {
                 self.address = nil
             }
-            if let lastUpdated = extras["last_updated"] as? Double
+            if let lastUpdated = extras["last_updated"] as? Int
             {
-                self.timestamp = Date(timeIntervalSince1970: lastUpdated)
+                self.timestamp = Date(timeIntervalSince1970: Double(lastUpdated))
             }
             else
             {

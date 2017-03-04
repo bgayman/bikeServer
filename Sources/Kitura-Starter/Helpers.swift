@@ -42,9 +42,10 @@ func stationJSON(href: String) -> JSON?
     return JSON(data: data)
 }
 
-func feeds(gbfsHref: URL) -> [GBFSFeed]?
+func feeds(gbfsHref: URL?) -> [GBFSFeed]?
 {
-    guard let data = try? Data(contentsOf: gbfsHref) else { return nil }
+    guard let gbfsHref = gbfsHref,
+          let data = try? Data(contentsOf: gbfsHref) else { return nil }
     let feedsJSON = JSON(data: data)
     guard let jsonArray = feedsJSON["data"]["en"]["feeds"].arrayObject as? [JSONDictionary] else { return nil }
     return jsonArray.flatMap(GBFSFeed.init)
@@ -87,6 +88,51 @@ func stationStatus(with feeds: [GBFSFeed], stationsDict: [String: GBFSStationInf
         return station
     }
     return newStations
+}
+
+func systemInformation(feeds: [GBFSFeed]) -> GBFSSystemInformation?
+{
+    let systemInformation = feeds.filter { $0.type == .systemInformation }
+    guard let systemInformationFeed = systemInformation.first,
+        let data = try? Data(contentsOf: systemInformationFeed.url)
+    else { return nil }
+    let systemInfoJSON = JSON(data: data)
+    guard let json = systemInfoJSON["data"].dictionaryObject else { return nil }
+    return GBFSSystemInformation(json: json)
+}
+
+func systemPricingPlan(feeds: [GBFSFeed]) -> [GBFSSystemPricingPlan]?
+{
+    let systemPricingPlan = feeds.filter { $0.type == .systemPricingPlans }
+    guard let systemPricingPlanFeed = systemPricingPlan.first,
+          let data = try? Data(contentsOf: systemPricingPlanFeed.url)
+    else { return nil }
+    let systemPricingPlanJSON = JSON(data: data)
+    guard let plansJSON = systemPricingPlanJSON["data"]["plans"].arrayObject as? [JSONDictionary]
+    else { return nil }
+    return plansJSON.flatMap(GBFSSystemPricingPlan.init)
+}
+
+func systemAlert(feeds: [GBFSFeed]) -> [GBFSSystemAlert]?
+{
+    let systemAlert = feeds.filter { $0.type == .systemAlerts }
+    guard let systemAlertFeed = systemAlert.first,
+          let data = try? Data(contentsOf: systemAlertFeed.url)
+    else { return nil }
+    let systemAlertJSON = JSON(data: data)
+    guard let alertsJSON = systemAlertJSON["data"]["alerts"].arrayObject as? [JSONDictionary] else { return nil }
+    var alerts = alertsJSON.flatMap(GBFSSystemAlert.init)
+    if let stationsInfo = stationInfo(feeds: feeds)
+    {
+        for (index, alert) in alerts.enumerated()
+        {
+            var alert = alert
+            guard let stationsIDs = alert.stationIDs else { continue }
+            alert.stations = stationsInfo.filter { stationsIDs.contains($0.stationID) }
+            alerts[index] = alert
+        }
+    }
+    return alerts
 }
 
 func stations(href: String) -> [BikeStation]?

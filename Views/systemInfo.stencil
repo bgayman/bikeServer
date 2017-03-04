@@ -1,0 +1,51 @@
+{% extends "master.stencil" %}
+{% block body %}
+<h1><a href="https://bike-share.mybluemix.net/">Is there bike share close to me?</a></h1>
+{% block answer %}
+
+{% endblock %}
+<dl>
+  <dt>{{name}}</dt>
+  <br />
+  <dt>{{timezone}}</dt>
+  <br />
+  <dt>{{name}}</dt>
+  <br />
+  {% if operator %}
+  <dt>{{operator}}</dt>
+  <br />
+  {% endif %}
+  {% if url %}
+  <dt><a href="{{url}}" >{{url}}</a></dt>
+  <br />
+  {% endif %}
+  {% if phone_number %}
+  <dt><a href="tel:{{phone_number}}">{{phone_number}}</a></dt>
+  <br />
+  {% endif %}
+  {% if email %}
+  <dt><a href="mailto:{{email}}">{{email}}</a></dt>
+  <br />
+  {% endif %}
+  {% if start_date %}
+  <dt>{{start_date}}</dt>
+  <br />
+  {% endif %}
+  {% for alert in alerts %}
+  <dt>{{alert.summary}}</dt>
+  {% for station in alert.stations %}
+  <dd>{{station.name}}</dd>
+  {% endfor %}
+  <br />
+  {% endfor %}
+  {% for plan in pricePlan %}
+  <dt>{{plan.name}} {{plan.price}}</dt>
+  <dd>{{plan.description}}</dd>
+  <br />
+  {% endfor %}
+</dl>
+<dl><a href="https://bike-share.mybluemix.net/networks"><div class="row"><dt><span id="company">View all networks</span></dt></div></a></dl>
+<br />
+{% endblock %}
+{% block title %}
+{% endblock %}

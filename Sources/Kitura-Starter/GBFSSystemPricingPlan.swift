@@ -17,6 +17,26 @@ struct GBFSSystemPricingPlan
     let price: Double
     let isTaxable: Bool?
     let description: String
+    
+    var jsonDict: JSONDictionary
+    {
+        var jsonDict: JSONDictionary = [
+            "plan_id": self.planID,
+            "name": self.name,
+            "currency": self.currency,
+            "price": self.price,
+            "description": self.description
+        ]
+        if let url = self.url
+        {
+            jsonDict["price"] = url.absoluteString
+        }
+        if let isTaxable = self.isTaxable
+        {
+            jsonDict["taxable"] = isTaxable
+        }
+        return jsonDict
+    }
 }
 
 extension GBFSSystemPricingPlan

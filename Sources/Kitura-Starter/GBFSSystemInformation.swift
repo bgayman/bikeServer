@@ -29,6 +29,46 @@ struct GBFSSystemInformation
     let email: String?
     let licenseURL: URL?
     let timeZone: String
+    
+    var jsonDict: JSONDictionary
+    {
+        var jsonDict = ["system_id": self.systemID,
+                        "name": self.name,
+                        "timezone": self.timeZone]
+        if let language = self.language
+        {
+            jsonDict["language"] = language
+        }
+        if let shortName = self.shortName
+        {
+            jsonDict["short_name"] = shortName
+        }
+        if let `operator` = self.operator
+        {
+            jsonDict["operator"] = `operator`
+        }
+        if let url = self.url?.absoluteString
+        {
+            jsonDict["url"] = url
+        }
+        if let purchaseURL = self.purchaseURL?.absoluteString
+        {
+            jsonDict["purchase_url"] = purchaseURL
+        }
+        if let date = self.startDate
+        {
+            jsonDict["state_date"] = GBFSSystemInformation.dateFormatter.string(from: date)
+        }
+        if let phoneNumber = self.phoneNumber
+        {
+            jsonDict["phone_number"] = phoneNumber
+        }
+        if let email = self.email
+        {
+            jsonDict["email"] = email
+        }
+        return jsonDict
+    }
 }
 
 extension GBFSSystemInformation
@@ -82,6 +122,5 @@ extension GBFSSystemInformation
         {
             self.licenseURL = nil
         }
-        
     }
 }

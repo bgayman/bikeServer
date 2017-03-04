@@ -144,6 +144,19 @@ public class Controller {
             response.send(json: json)
         }
         
+        router.get("systemInfo/:networkID")
+        { request, response, next in
+            defer{ next() }
+            guard let href = request.parameters["networkID"],
+                let network = network(for: href),
+                let feeds = feeds(gbfsHref: network.gbfsHref)
+            else { return }
+            guard var context = systemInformation(feeds: feeds)?.jsonDict else { return }
+            context["pricePlan"] = systemPricingPlan(feeds: feeds)
+            context["alerts"] = systemAlert(feeds: feeds)
+            try response.render("systemInfo", context: context)
+        }
+        
         router.get("json/network/:id/lat/:lat/long/:long")
         { request, response, next in
             defer{ next() }

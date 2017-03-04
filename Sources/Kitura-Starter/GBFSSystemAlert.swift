@@ -42,6 +42,36 @@ struct GBFSSystemAlert
     let summary: String
     let description: String?
     var stations: [GBFSStationInformation]? = nil
+    
+    var jsonDict: JSONDictionary
+    {
+        var jsonDict: JSONDictionary = [
+            "alert_id": self.alertID,
+            "type": self.type.displayText,
+            "summary": self.summary
+        ]
+        if let startTime = self.startTime
+        {
+            jsonDict["start_time"] = startTime.description
+        }
+        if let endTime = self.endTime
+        {
+            jsonDict["end_time"] = endTime.description
+        }
+        if let url = self.url?.absoluteString
+        {
+            jsonDict["url"] = url
+        }
+        if let description = self.description
+        {
+            jsonDict["description"] = description
+        }
+        if let stations = self.stations
+        {
+            jsonDict["stations"] = stations.map { $0.jsonDict }
+        }
+        return jsonDict
+    }
 }
 
 extension GBFSSystemAlert
@@ -61,17 +91,17 @@ extension GBFSSystemAlert
         self.summary = summary
         if let times = json["times"] as? JSONDictionary
         {
-            if let startDouble = times["start"] as? Double
+            if let startDouble = times["start"] as? Int
             {
-                self.startTime = Date(timeIntervalSinceReferenceDate: startDouble)
+                self.startTime = Date(timeIntervalSince1970: Double(startDouble))
             }
             else
             {
                 self.startTime = nil
             }
-            if let endDouble = times["end"] as? Double
+            if let endDouble = times["end"] as? Int
             {
-                self.endTime = Date(timeIntervalSinceReferenceDate: endDouble)
+                self.endTime = Date(timeIntervalSince1970: Double(endDouble))
             }
             else
             {

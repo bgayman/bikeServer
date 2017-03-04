@@ -43,9 +43,9 @@ extension GBFSStationStatus
         guard let stationID = json["station_id"] as? String,
               let numberOfBikesAvailable = json["num_bikes_available"] as? Int,
               let numberOfDocksAvailable = json["num_docks_available"] as? Int,
-              let isInstalled = json["is_installed"] as? Bool,
-              let isRenting = json["is_renting"] as? Bool,
-              let isReturning = json["is_returning"] as? Bool,
+              let isInstalled = json["is_installed"] as? Int,
+              let isRenting = json["is_renting"] as? Int,
+              let isReturning = json["is_returning"] as? Int,
               let lastReportedInt = json["last_reported"] as? Int
         else { return nil }
         self.stationID = stationID
@@ -53,9 +53,9 @@ extension GBFSStationStatus
         self.numberOfDocksAvailable = numberOfDocksAvailable
         self.numberOfBikesDisabled = json["num_bikes_disabled"] as? Int
         self.numberOfDocksDisabled = json["num_docks_disabled"] as? Int
-        self.isInstalled = isInstalled
-        self.isRenting = isRenting
-        self.isReturning = isReturning
+        self.isInstalled = isInstalled == 1
+        self.isRenting = isRenting == 1
+        self.isReturning = isReturning == 1
         self.lastReported = Date(timeIntervalSince1970: Double(lastReportedInt))
     }
 }
