@@ -15,6 +15,7 @@
  **/
 
 import Kitura
+import KituraSession
 import SwiftyJSON
 import LoggerAPI
 import CloudFoundryEnv
@@ -50,6 +51,7 @@ public class Controller {
         router.get("/json", handler: getJSON)
         
         router.setDefault(templateEngine: StencilTemplateEngine())
+        router.all(middleware: Session(secret: "c'est la vie"))
         
         router.get("/")
         { request, response, next in
@@ -67,8 +69,15 @@ public class Controller {
         router.get("/networks")
         { request, response, next in
             defer{ next() }
-            let json = networkJSON?.rawValue as? [String: Any]
-            try response.render("networks", context: json ?? [:])
+            guard var networks = networks else { return }
+            if let lat = request.session?["lat"].double,
+               let long = request.session?["long"].double
+            {
+                networks = sortedNetworks(coordinates: Coordinates(latitude: lat, longitude: long), networks: networks)
+            }
+            var context = JSONDictionary()
+            context["networks"] = networks.map { $0.jsonDict }
+            try response.render("networks", context: context)
         }
         
         router.get("/networks/json")
@@ -92,7 +101,12 @@ public class Controller {
                 let network = network(for: href)
                 else { return }
             var context = JSONDictionary()
-            guard let stations = stations(href: href) else { return }
+            guard var stations = stations(href: href) else { return }
+            if let lat = request.session?["lat"].double,
+               let long = request.session?["long"].double
+            {
+                stations = sortedStations(coordinates: Coordinates(latitude: lat, longitude: long), stations: stations)
+            }
             context["network"] = network.jsonDict
             if let data = try? Data(contentsOf: timeZoneURL(lat: network.location.coordinates.latitude, long: network.location.coordinates.longitude))
             {
@@ -152,6 +166,7 @@ public class Controller {
                 let feeds = feeds(gbfsHref: network.gbfsHref)
             else { return }
             guard var context = systemInformation(feeds: feeds)?.jsonDict else { return }
+            context["network"] = network.jsonDict
             context["pricePlan"] = systemPricingPlan(feeds: feeds)
             context["alerts"] = systemAlert(feeds: feeds)
             try response.render("systemInfo", context: context)
@@ -198,6 +213,10 @@ public class Controller {
             defer{ next() }
             guard let lat = Double(request.parameters["lat"] ?? "a") else { return }
             guard let long = Double(request.parameters["long"] ?? "a") else { return }
+            
+            request.session?["lat"].double = lat
+            request.session?["long"].double = long
+            
             let coordinates = Coordinates(latitude: lat, longitude: long)
             let json = closebyStationsJSON(coordinates: coordinates)
             let context = json.rawValue as? [String: Any]

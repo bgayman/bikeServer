@@ -135,6 +135,24 @@ func systemAlert(feeds: [GBFSFeed]) -> [GBFSSystemAlert]?
     return alerts
 }
 
+func sortedStations(coordinates: Coordinates, stations: [BikeStation]) -> [BikeStation]
+{
+    let sortedStations = stations.sorted
+    {
+        $0.0.coordinates.distance(to: coordinates) < $0.1.coordinates.distance(to: coordinates)
+    }
+    return sortedStations
+}
+
+func sortedNetworks(coordinates: Coordinates, networks: [BikeNetwork]) -> [BikeNetwork]
+{
+    let sortedNetworks = networks.sorted
+    {
+        $0.0.location.coordinates.distance(to: coordinates) < $0.1.location.coordinates.distance(to: coordinates)
+    }
+    return sortedNetworks
+}
+
 func stations(href: String) -> [BikeStation]?
 {
     guard let json = stationJSON(href: href) else { return nil }
