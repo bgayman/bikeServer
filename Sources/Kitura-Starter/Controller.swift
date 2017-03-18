@@ -90,7 +90,10 @@ public class Controller {
         { request, response, next in
             defer{ next() }
             guard let href = request.parameters["id"] else { return }
-            guard let stationJSON = stationJSON(href: href) else { return }
+            guard let stations = stations(href: href) else { return }
+            var context = JSONDictionary()
+            context["stations"] = stations.map{ $0.jsonDict }
+            let stationJSON = JSON(context)
             response.send(json: stationJSON)
         }
         
