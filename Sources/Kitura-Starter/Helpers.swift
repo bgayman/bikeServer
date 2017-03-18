@@ -200,7 +200,7 @@ func closebyStations(coordinates: Coordinates, network: BikeNetwork) -> [BikeSta
     guard let stations = stations(href: network.id) else { return nil }
     let sortedStations = stations.sorted{ $0.coordinates.distance(to: coordinates) < $1.coordinates.distance(to: coordinates) }
     guard sortedStations.first != nil else { return [] }
-    var closeStations = Array(sortedStations.prefix(5))
+    var closeStations = Array(sortedStations.prefix(8))
     closeStations = closeStations.map
     {
         var station = $0

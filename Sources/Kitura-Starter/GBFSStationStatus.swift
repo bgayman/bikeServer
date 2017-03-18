@@ -31,7 +31,7 @@ struct GBFSStationStatus
             "is_installed": self.isInstalled,
             "is_renting": self.isRenting,
             "is_returning": self.isReturning,
-            "last_reported": self.lastReported
+            "last_reported": self.lastReported.timeIntervalSince1970
         ]
     }
 }
