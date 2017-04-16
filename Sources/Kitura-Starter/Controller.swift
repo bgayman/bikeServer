@@ -21,21 +21,29 @@ import LoggerAPI
 import CloudFoundryEnv
 import KituraStencil
 import Foundation
+import MySQL
+import Dispatch
 
 public class Controller {
     
     let router: Router
     let appEnv: AppEnv
+    let dispatchTimer: DispatchSourceTimer
     
-    var port: Int {
+    var port: Int
+    {
         get { return appEnv.port }
     }
     
-    var url: String {
+    var url: String
+    {
         get { return appEnv.url }
     }
     
-    init() throws {
+    init() throws
+    {
+        let queue = DispatchQueue(label: "com.bradgayman.bikeshare")
+        self.dispatchTimer = DispatchSource.makeTimerSource(queue: queue)
         appEnv = try CloudFoundryEnv.getAppEnv()
         
         // All web apps need a Router instance to define routes
@@ -49,6 +57,16 @@ public class Controller {
         
         // JSON Get request
         router.get("/json", handler: getJSON)
+        
+        self.dispatchTimer.scheduleRepeating(deadline: DispatchTime.now(), interval: DispatchTimeInterval.seconds(360), leeway: DispatchTimeInterval.seconds(60))
+        self.dispatchTimer.setEventHandler
+        {
+            addStationStatusesToDatabase(networkID: "citi-bike-nyc")
+        }
+        DispatchQueue(label: "com.bradgayman.bikeshare").asyncAfter(deadline: DispatchTime.now() + DispatchTimeInterval.seconds(60))
+        {
+            addStationStatusesToDatabase(networkID: "citi-bike-nyc")
+        }
         
         router.setDefault(templateEngine: StencilTemplateEngine())
         router.all(middleware: Session(secret: "c'est la vie"))
@@ -144,6 +162,34 @@ public class Controller {
                 context["stations"] = stats.map{ $0.jsonDict }
             }
             try response.render("singleStation", context: context)
+        }
+        
+        router.get("network/:networkID/station/:stationID/history/json")
+        { request, response, next in
+            defer{ next() }
+            guard let href = request.parameters["networkID"],
+                let network = network(for: href),
+                let stationID = request.parameters["stationID"]
+                else { return }
+            var context = JSONDictionary()
+            context["network"] = network.jsonDict
+            guard var stats = stations(href: href) else { return }
+            stats = stats.filter({ $0.id == stationID })
+            if let data = try? Data(contentsOf: timeZoneURL(lat: network.location.coordinates.latitude, long: network.location.coordinates.longitude))
+            {
+                let timeZoneJSON = JSON(data: data)
+                context["stations"] = stats.map{ $0.jsonDict(timeZoneID: timeZoneJSON["timeZoneId"].stringValue) }
+            }
+            else
+            {
+                context["stations"] = stats.map { $0.jsonDict }
+            }
+            if let statuses = getStationStatusesFromDatabase(networkID: href, stationID: stationID)
+            {
+                context["statuses"] = statuses.map { $0.jsonDict }
+            }
+            let json = JSON(context)
+            response.send(json: json)
         }
         
         router.get("json/lat/:lat/long/:long")

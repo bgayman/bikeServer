@@ -8,6 +8,8 @@
 
 import Foundation
 import SwiftyJSON
+import MySQL
+import LoggerAPI
 
 var networkData: Data?
 
@@ -235,7 +237,52 @@ func closebyStationsJSON(coordinates: Coordinates) -> JSON
     return json
 }
 
+func addStationStatusesToDatabase(networkID: String)
+{
+    guard let stations = stations(href: networkID) else { return }
+    do
+    {
+        let (db, _) = try connectToDatabase()
+        for station in stations
+        {
+            let queryString = "INSERT INTO `station status` "
+            + "(`stationID`, `networkID`, `timestamp`, `numberofBikesAvailable`, `numberOfBikesDisabled`, `numberOfDocksAvailable`, `numberOfDocksDisabled`, `isInstalled`, `isRenting`, `isReturning`)"
+            + " VALUES ('\(station.id)', '\(networkID)', NOW(), \(station.freeBikes ?? 0), \(station.gbfsStationInformation?.stationStatus?.numberOfBikesDisabled ?? 0), \(station.emptySlots ?? 0), \(station.gbfsStationInformation?.stationStatus?.numberOfDocksDisabled ?? 0), \(station.gbfsStationInformation?.stationStatus?.isInstalled == true ? "TRUE" : "FALSE"), \(station.gbfsStationInformation?.stationStatus?.isRenting == true ? "TRUE" : "FALSE"), \(station.gbfsStationInformation?.stationStatus?.isReturning == true ? "TRUE" : "FALSE"));"
+            try db.execute(queryString)
+        }
+    }
+    catch
+    {
+        Log.warning("Failed to send /statuses for \(networkID): \(error.localizedDescription)")
+    }
+}
+
+func getStationStatusesFromDatabase(networkID: String, stationID: String) -> [BikeStationStatus]?
+{
+    do
+    {
+        let (db, connection) = try connectToDatabase()
+        let queryString = "SELECT * FROM `station status` WHERE `networkID` = ? AND `stationID` = ? ORDER BY `timestamp` DESC LIMIT 168;"
+        let statusNodes = try db.execute(queryString, [networkID, stationID], connection)
+        let statuses = statusNodes.flatMap(BikeStationStatus.init)
+        return statuses
+        
+    }
+    catch
+    {
+        Log.warning("Failed to get /statuses for \(networkID): \(error.localizedDescription)")
+        return nil
+    }
+}
+
 func timeZoneURL(lat: Double, long: Double) -> URL
 {
     return URL(string: "https://maps.googleapis.com/maps/api/timezone/json?location=\(lat),\(long)&timestamp=0&key=AIzaSyC7QULaKAQL2T8wEwGweWIrYpA8IthppiE")!
+}
+
+func connectToDatabase() throws -> (Database, Connection)
+{
+    let mysql = try Database(host: "us-cdbr-iron-east-03.cleardb.net", user: "bce981c40a2a56", password: "cc6ee0f1", database: "ad_2c4f230ef48ac7a")
+    let connection = try mysql.makeConnection()
+    return (mysql, connection)
 }
