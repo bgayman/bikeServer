@@ -1,2 +1,1 @@
-$ cat .swift-build-options-linux
 -Xswiftc -DNOJSON

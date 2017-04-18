@@ -242,13 +242,14 @@ func addStationStatusesToDatabase(networkID: String)
     guard let stations = stations(href: networkID) else { return }
     do
     {
-        let (db, _) = try connectToDatabase()
+        let (db, connection) = try connectToDatabase()
+        
+        let deleteQuery = "DELETE FROM `station status` WHERE `timestamp` < (NOW() - INTERVAL 2 WEEK)"
+        try db.execute(deleteQuery)
+        
         for station in stations
         {
-            let queryString = "INSERT INTO `station status` "
-            + "(`stationID`, `networkID`, `timestamp`, `numberofBikesAvailable`, `numberOfBikesDisabled`, `numberOfDocksAvailable`, `numberOfDocksDisabled`, `isInstalled`, `isRenting`, `isReturning`)"
-            + " VALUES ('\(station.id)', '\(networkID)', NOW(), \(station.freeBikes ?? 0), \(station.gbfsStationInformation?.stationStatus?.numberOfBikesDisabled ?? 0), \(station.emptySlots ?? 0), \(station.gbfsStationInformation?.stationStatus?.numberOfDocksDisabled ?? 0), \(station.gbfsStationInformation?.stationStatus?.isInstalled == true ? "TRUE" : "FALSE"), \(station.gbfsStationInformation?.stationStatus?.isRenting == true ? "TRUE" : "FALSE"), \(station.gbfsStationInformation?.stationStatus?.isReturning == true ? "TRUE" : "FALSE"));"
-            try db.execute(queryString)
+            try db.execute(station.insertQueryString, [networkID], connection)
         }
     }
     catch

@@ -44,6 +44,20 @@ struct BikeStation
         return status
     }
     
+    var insertQueryString: String
+    {
+        let isInstalledString = self.gbfsStationInformation?.stationStatus?.isInstalled == true ? "TRUE" : "FALSE"
+        let isRentingString = self.gbfsStationInformation?.stationStatus?.isRenting == true ? "TRUE" : "FALSE"
+        let isReturningString = self.gbfsStationInformation?.stationStatus?.isReturning == true ? "TRUE" : "FALSE"
+        let freeBikesString = "\(self.freeBikes ?? 0)"
+        let numberOfBikesDisabledString = "\(self.gbfsStationInformation?.stationStatus?.numberOfBikesDisabled ?? 0)"
+        let emptySlotsString = "\(self.emptySlots ?? 0)"
+        let numberOfDocksDisabledString = "\(self.gbfsStationInformation?.stationStatus?.numberOfDocksDisabled ?? 0)"
+        
+        let queryString = "INSERT INTO `station status` (`stationID`, `networkID`, `timestamp`, `numberofBikesAvailable`, `numberOfBikesDisabled`, `numberOfDocksAvailable`, `numberOfDocksDisabled`, `isInstalled`, `isRenting`, `isReturning`) VALUES ('\(self.id)', ?, NOW(), \(freeBikesString), \(numberOfBikesDisabledString), \(emptySlotsString), \(numberOfDocksDisabledString), \(isInstalledString), \(isRentingString), \(isReturningString));"
+        return queryString
+    }
+    
     var dateComponentText: String
     {
         let dateComponentString = Constants.displayDateFormatter.string(from: self.timestamp)

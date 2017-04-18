@@ -21,7 +21,6 @@ import LoggerAPI
 import CloudFoundryEnv
 import KituraStencil
 import Foundation
-import MySQL
 import Dispatch
 
 public class Controller {
@@ -58,14 +57,14 @@ public class Controller {
         // JSON Get request
         router.get("/json", handler: getJSON)
         
-        self.dispatchTimer.scheduleRepeating(deadline: DispatchTime.now(), interval: DispatchTimeInterval.seconds(360), leeway: DispatchTimeInterval.seconds(60))
+        self.dispatchTimer.scheduleRepeating(deadline: DispatchTime.now(), interval: DispatchTimeInterval.seconds(3600), leeway: DispatchTimeInterval.seconds(60))
         self.dispatchTimer.setEventHandler
         {
             addStationStatusesToDatabase(networkID: "citi-bike-nyc")
         }
-        DispatchQueue(label: "com.bradgayman.bikeshare").asyncAfter(deadline: DispatchTime.now() + DispatchTimeInterval.seconds(60))
-        {
-            addStationStatusesToDatabase(networkID: "citi-bike-nyc")
+        DispatchQueue(label: "com.bradgayman.bikeshare").asyncAfter(deadline: DispatchTime.now() + DispatchTimeInterval.seconds(10))
+        { [weak self] in
+            self?.dispatchTimer.resume()
         }
         
         router.setDefault(templateEngine: StencilTemplateEngine())
@@ -178,11 +177,11 @@ public class Controller {
             if let data = try? Data(contentsOf: timeZoneURL(lat: network.location.coordinates.latitude, long: network.location.coordinates.longitude))
             {
                 let timeZoneJSON = JSON(data: data)
-                context["stations"] = stats.map{ $0.jsonDict(timeZoneID: timeZoneJSON["timeZoneId"].stringValue) }
+                context["station"] = stats.map{ $0.jsonDict(timeZoneID: timeZoneJSON["timeZoneId"].stringValue) }
             }
             else
             {
-                context["stations"] = stats.map { $0.jsonDict }
+                context["station"] = stats.map { $0.jsonDict }
             }
             if let statuses = getStationStatusesFromDatabase(networkID: href, stationID: stationID)
             {
