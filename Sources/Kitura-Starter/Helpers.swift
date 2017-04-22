@@ -244,13 +244,14 @@ func addStationStatusesToDatabase(networkID: String)
     {
         let (db, connection) = try connectToDatabase()
         
-        let deleteQuery = "DELETE FROM `station status` WHERE `timestamp` < (NOW() - INTERVAL 2 WEEK)"
+        let deleteQuery = "DELETE FROM `\(networkID)` WHERE `timestamp` < (NOW() - INTERVAL 1 WEEK)"
         try db.execute(deleteQuery)
-        
+        try db.execute("SET autocommit=0;", [], connection)
         for station in stations
         {
-            try db.execute(station.insertQueryString, [networkID], connection)
+            try db.execute("INSERT INTO `\(networkID)`" + station.insertQueryString, [networkID], connection)
         }
+        try db.execute("COMMIT;", [], connection)
     }
     catch
     {
@@ -258,20 +259,20 @@ func addStationStatusesToDatabase(networkID: String)
     }
 }
 
-func getStationStatusesFromDatabase(networkID: String, stationID: String) -> [BikeStationStatus]?
+func getStationStatusesFromDatabase(network: BikeNetwork, stationID: String) -> [BikeStationStatus]?
 {
     do
     {
         let (db, connection) = try connectToDatabase()
-        let queryString = "SELECT * FROM `station status` WHERE `networkID` = ? AND `stationID` = ? ORDER BY `timestamp` DESC LIMIT 168;"
-        let statusNodes = try db.execute(queryString, [networkID, stationID], connection)
+        let queryString = "SELECT * FROM `\(network.id)` WHERE `stationID` = ? ORDER BY `timestamp` DESC LIMIT 168;"
+        let statusNodes = try db.execute(queryString, [stationID], connection)
         let statuses = statusNodes.flatMap(BikeStationStatus.init)
         return statuses
         
     }
     catch
     {
-        Log.warning("Failed to get /statuses for \(networkID): \(error.localizedDescription)")
+        Log.warning("Failed to get /statuses for \(network.id): \(error.localizedDescription)")
         return nil
     }
 }
@@ -283,7 +284,7 @@ func timeZoneURL(lat: Double, long: Double) -> URL
 
 func connectToDatabase() throws -> (Database, Connection)
 {
-    let mysql = try Database(host: "us-cdbr-iron-east-03.cleardb.net", user: "bce981c40a2a56", password: "cc6ee0f1", database: "ad_2c4f230ef48ac7a")
+    let mysql = try Database(host: "us-cdbr-iron-east-03.cleardb.net", user: "b7d5233d55fa0a", password: "48eb44de", database: "ad_45072b617cc9058")
     let connection = try mysql.makeConnection()
     return (mysql, connection)
 }

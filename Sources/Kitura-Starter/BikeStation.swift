@@ -54,7 +54,7 @@ struct BikeStation
         let emptySlotsString = "\(self.emptySlots ?? 0)"
         let numberOfDocksDisabledString = "\(self.gbfsStationInformation?.stationStatus?.numberOfDocksDisabled ?? 0)"
         
-        let queryString = "INSERT INTO `station status` (`stationID`, `networkID`, `timestamp`, `numberofBikesAvailable`, `numberOfBikesDisabled`, `numberOfDocksAvailable`, `numberOfDocksDisabled`, `isInstalled`, `isRenting`, `isReturning`) VALUES ('\(self.id)', ?, NOW(), \(freeBikesString), \(numberOfBikesDisabledString), \(emptySlotsString), \(numberOfDocksDisabledString), \(isInstalledString), \(isRentingString), \(isReturningString));"
+        let queryString =  "(`stationID`, `networkID`, `timestamp`, `numberofBikesAvailable`, `numberOfBikesDisabled`, `numberOfDocksAvailable`, `numberOfDocksDisabled`, `isInstalled`, `isRenting`, `isReturning`) VALUES ('\(self.id)', ?, NOW(), \(freeBikesString), \(numberOfBikesDisabledString), \(emptySlotsString), \(numberOfDocksDisabledString), \(isInstalledString), \(isRentingString), \(isReturningString));"
         return queryString
     }
     

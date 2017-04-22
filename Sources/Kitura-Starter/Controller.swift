@@ -29,6 +29,8 @@ public class Controller {
     let appEnv: AppEnv
     let dispatchTimer: DispatchSourceTimer
     
+    let historyNetworks = ["citi-bike-nyc", "santander-cycles", "bay-area-bike-share", "divvy"]
+    
     var port: Int
     {
         get { return appEnv.port }
@@ -60,7 +62,8 @@ public class Controller {
         self.dispatchTimer.scheduleRepeating(deadline: DispatchTime.now(), interval: DispatchTimeInterval.seconds(3600), leeway: DispatchTimeInterval.seconds(60))
         self.dispatchTimer.setEventHandler
         {
-            addStationStatusesToDatabase(networkID: "citi-bike-nyc")
+            self.historyNetworks.forEach { addStationStatusesToDatabase(networkID: $0) }
+            
         }
         DispatchQueue(label: "com.bradgayman.bikeshare").asyncAfter(deadline: DispatchTime.now() + DispatchTimeInterval.seconds(10))
         { [weak self] in
@@ -74,6 +77,13 @@ public class Controller {
         { request, response, next in
             defer{ next() }
             try response.render("home", context: [:])
+        }
+        
+        router.get("/historyNetworks")
+        { request, response, next in
+            defer{ next() }
+            let json = JSON(self.historyNetworks)
+            response.send(json: json)
         }
         
         router.get("/apple-app-site-association")
@@ -183,7 +193,7 @@ public class Controller {
             {
                 context["station"] = stats.map { $0.jsonDict }
             }
-            if let statuses = getStationStatusesFromDatabase(networkID: href, stationID: stationID)
+            if let statuses = getStationStatusesFromDatabase(network: network, stationID: stationID)
             {
                 context["statuses"] = statuses.map { $0.jsonDict }
             }
