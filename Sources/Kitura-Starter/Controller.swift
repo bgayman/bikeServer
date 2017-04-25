@@ -29,7 +29,16 @@ public class Controller {
     let appEnv: AppEnv
     let dispatchTimer: DispatchSourceTimer
     
-    let historyNetworks = ["citi-bike-nyc", "santander-cycles", "bay-area-bike-share", "divvy"]
+    let historyNetworks = ["citi-bike-nyc",
+                           "santander-cycles",
+                           "bay-area-bike-share",
+                           "divvy",
+                           "biketown",
+                           "bixi-montreal",
+                           "bixi-toronto",
+                           "capital-bikeshare",
+                           "metro-bike-share",
+                           "velib"]
     
     var port: Int
     {
