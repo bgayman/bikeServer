@@ -6,5 +6,7 @@ map.setCenter(position, zoom);
 <h3 class="happy"><a href="/stations/{{ network.id }}">🚲 {{network.name}}s 🚲</a></h3>
 {% endblock %}
 {% block title %}
-🚲 {{network.name}}s 🚲
+{% for station in stations %}
+🚲 {{ station.name }} - {{ station.status }} 🚲
+{% endfor %}
 {% endblock %}

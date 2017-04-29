@@ -38,7 +38,9 @@ public class Controller {
                            "bixi-toronto",
                            "capital-bikeshare",
                            "metro-bike-share",
-                           "velib"]
+                           "velib",
+                           "ecobici",
+                           "bikerio"]
     
     var port: Int
     {
