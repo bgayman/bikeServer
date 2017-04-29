@@ -7,6 +7,6 @@ map.setCenter(position, zoom);
 {% endblock %}
 {% block title %}
 {% for station in stations %}
-🚲 {{ station.name }} - {{ station.status }} 🚲
+{{ station.name }} - {{ station.status }}
 {% endfor %}
 {% endblock %}
