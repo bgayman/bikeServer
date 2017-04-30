@@ -44,7 +44,7 @@ public class Controller {
                            "mobibikes",
                            "boise-greenbike",
                            "greenbikeslc",
-                           "hudway",
+                           "hubway",
                            "indego",
                            "denver"]
     
