@@ -41,7 +41,12 @@ public class Controller {
                            "velib",
                            "ecobici",
                            "bikerio",
-                           "mobibikes"]
+                           "mobibikes",
+                           "boise-greenbike",
+                           "greenbikeslc",
+                           "hudway",
+                           "indego",
+                           "denver"]
     
     var port: Int
     {
