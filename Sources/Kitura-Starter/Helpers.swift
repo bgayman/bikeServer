@@ -181,20 +181,44 @@ func stations(href: String) -> [BikeStation]?
 func closebyStations(coordinates: Coordinates) -> ([BikeStation]?, BikeNetwork?)
 {
     guard let netW = networks else { return (nil, nil) }
-    let sortedNetworks = netW.sorted{ $0.location.coordinates.distance(to: coordinates) < $1.location.coordinates.distance(to: coordinates) }
-    guard let closestNetwork = sortedNetworks.first else { return (nil, nil) }
-    guard let stations = stations(href: closestNetwork.id) else { return (nil, closestNetwork) }
-    let sortedStations = stations.sorted{ $0.coordinates.distance(to: coordinates) < $1.coordinates.distance(to: coordinates) }
-    guard let closestStation = sortedStations.first else { return ([], closestNetwork) }
-    guard closestStation.coordinates.distance(to: coordinates) <= 10.0 else { return ([], closestNetwork) }
-    var closeStations = Array(sortedStations.prefix(5))
+    let sortedNetworks = netW.filter{ $0.location.coordinates.distance(to: coordinates) < 50.0 }
+    guard !sortedNetworks.isEmpty else { return (nil, nil) }
+    let networkStations = sortedNetworks.map { ($0, stations(href: $0.id)) }
+    let lotsOfStations = networkStations.flatMap { $0.1 }.flatMap { $0 }
+    let sortedStations = lotsOfStations.sorted{ $0.coordinates.distance(to: coordinates) < $1.coordinates.distance(to: coordinates) }
+    guard let closestStation = sortedStations.first else { return ([], sortedNetworks.first) }
+    var closestNetworkStation: (BikeNetwork, [BikeStation]?)?
+    for networkStation in networkStations
+    {
+        if networkStation.1?.contains(closestStation) == true
+        {
+            closestNetworkStation = networkStation
+            break
+        }
+    }
+    guard closestNetworkStation != nil  else { return  (nil, nil) }
+    guard closestStation.coordinates.distance(to: coordinates) <= 10.0 else { return ([], closestNetworkStation!.0) }
+    guard let closeStationsAll = closestNetworkStation?.1 else { return ([], closestNetworkStation!.0) }
+    let sortedCloseStations = closeStationsAll.sorted { $0.coordinates.distance(to: coordinates) < $1.coordinates.distance(to: coordinates) }
+    var closeStations = Array(sortedCloseStations.prefix(5))
     closeStations = closeStations.map
     {
         var station = $0
         station.distance = station.coordinates.distance(to: coordinates)
         return station
     }
-    return (closeStations, closestNetwork)
+    return (closeStations, closestNetworkStation!.0)
+}
+
+func stations(with ids: [String], in network: BikeNetwork) -> [BikeStation]?
+{
+    guard let stations = stations(href: network.id) else { return nil }
+    return stations.filter { ids.contains($0.id) }
+}
+
+func stationsJSON(with ids: [String], in network: BikeNetwork) -> [JSONDictionary]?
+{
+    return stations(with: ids, in: network)?.map { $0.jsonDict }
 }
 
 func closebyStations(coordinates: Coordinates, network: BikeNetwork) -> [BikeStation]?

@@ -1,7 +1,12 @@
 {% extends "master.stencil" %}
 {% block body %}
+<div id="grad">
 <h1><a href="https://bike-share.mybluemix.net/">Is there bike share close to me?</a></h1>
-<p class="face">🤔</p>
+<div class="face"
+style="content: -webkit-image-set(
+url(/static/bikeBear.png) 1x,
+url(/static/bikeBear2x.png) 2x); margin:auto">
+</div>
 <form>
 <input id="searchTextField" type="text" size="50" placeholder="Search for a location" autocomplete="on" runat="server" />
 </form>
@@ -9,6 +14,8 @@
 <br />
 <dl><a href="https://bike-share.mybluemix.net/networks"><div class="row"><dt><span id="company">View all networks</span></dt></div></a></dl>
 <br />
+{% include "footer.stencil" %}
+</div>
 <script>
 window.onload = navigator.geolocation.getCurrentPosition(function(location) {
   window.location = "https://bike-share.mybluemix.net/lat/" + location.coords.latitude + "/long/" + location.coords.longitude;

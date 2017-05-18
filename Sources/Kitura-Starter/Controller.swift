@@ -250,6 +250,19 @@ public class Controller {
             response.send(json: jsonDict)
         }
         
+        router.get("json/network/:id/stations/:stationIDs")
+        { request, response, next in
+            defer{ next() }
+            guard let networkID = request.parameters["id"],
+                  let network = network(for: networkID),
+                  let stationIDs = request.parameters["id"]?.components(separatedBy: "|")
+            else { return }
+            guard let stationsJSON = stationsJSON(with: stationIDs, in: network) else { return }
+            var jsonDict: JSONDictionary = ["network": network.jsonDict]
+            jsonDict["stations"] = stationsJSON
+            response.send(json: jsonDict)
+        }
+        
         router.get("json/lat/:lat/long/:long")
         { request, response, next in
             defer{ next() }
