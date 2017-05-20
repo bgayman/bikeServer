@@ -11,17 +11,17 @@ import SwiftyJSON
 import MySQL
 import LoggerAPI
 
-var networkData: Data?
+var networkData: JSON?
 
 var networkJSON: JSON?
 {
     if let networkData = networkData
     {
-        return JSON(data: networkData)
+        return networkData
     }
-    guard let data = try? Data(contentsOf: Constants.NetworkURL) else { return nil }
+    guard let data = get(Constants.NetworkURL.absoluteString) else { return nil }
     networkData = data
-    return JSON(data: data)
+    return data
 }
 
 var networks: [BikeNetwork]?
@@ -39,40 +39,33 @@ func network(for id: String) -> BikeNetwork?
 
 func stationJSON(href: String) -> JSON?
 {
-    guard let url = URL(string: "\(Constants.BaseURL)\(href)") else { return nil }
-    guard let data = try? Data(contentsOf: url) else { return nil }
-    return JSON(data: data)
+    return get("\(Constants.BaseURL)\(href)")
 }
 
 func feeds(gbfsHref: URL?) -> [GBFSFeed]?
 {
-    guard let gbfsHref = gbfsHref,
-          let data = try? Data(contentsOf: gbfsHref) else { return nil }
-    let feedsJSON = JSON(data: data)
-    guard let jsonArray = feedsJSON["data"]["en"]["feeds"].arrayObject as? [JSONDictionary] else { return nil }
+    guard let gbfsHref = gbfsHref else { return nil }
+    let feedsJSON = get(gbfsHref.absoluteString)
+    guard let jsonArray = feedsJSON?["data"]["en"]["feeds"].arrayObject as? [JSONDictionary] else { return nil }
     return jsonArray.flatMap(GBFSFeed.init)
 }
 
 func stationInfo(feeds: [GBFSFeed]) -> [GBFSStationInformation]?
 {
-    let stationFeed = feeds.filter { $0.type == .stationInformation }
-    guard let stationInfoFeed = stationFeed.first,
-          let data = try? Data(contentsOf: stationInfoFeed.url)
-    else { return nil }
-    let stationInfoJSON = JSON(data: data)
-    guard let jsonArray = stationInfoJSON["data"]["stations"].arrayObject as? [JSONDictionary] else { return nil }
+    let stationFeed = feeds.first { $0.type == .stationInformation }
+    guard let stationInfoFeed = stationFeed else { return nil }
+    let stationInfoJSON = get(stationInfoFeed.url.absoluteString)
+    guard let jsonArray = stationInfoJSON?["data"]["stations"].arrayObject as? [JSONDictionary] else { return nil }
     return jsonArray.flatMap(GBFSStationInformation.init)
 }
 
 func stationStatus(with feeds: [GBFSFeed], stationsDict: [String: GBFSStationInformation], stations: [BikeStation]) -> [BikeStation]?
 {
     var stationsDict = stationsDict
-    let stationFeed = feeds.filter { $0.type == .stationStatus }
-    guard let stationStatusFeed = stationFeed.first,
-          let data = try? Data(contentsOf: stationStatusFeed.url)
-    else { return nil }
-    let stationStatusJSON = JSON(data: data)
-    guard let jsonArray = stationStatusJSON["data"]["stations"].arrayObject as? [JSONDictionary] else { return nil }
+    let stationFeed = feeds.first { $0.type == .stationStatus }
+    guard let stationStatusFeed = stationFeed else { return nil }
+    let stationStatusJSON = get(stationStatusFeed.url.absoluteString)
+    guard let jsonArray = stationStatusJSON?["data"]["stations"].arrayObject as? [JSONDictionary] else { return nil }
     let stationStatuses = jsonArray.flatMap(GBFSStationStatus.init)
     for stationStatus in stationStatuses
     {
@@ -94,35 +87,29 @@ func stationStatus(with feeds: [GBFSFeed], stationsDict: [String: GBFSStationInf
 
 func systemInformation(feeds: [GBFSFeed]) -> GBFSSystemInformation?
 {
-    let systemInformation = feeds.filter { $0.type == .systemInformation }
-    guard let systemInformationFeed = systemInformation.first,
-        let data = try? Data(contentsOf: systemInformationFeed.url)
-    else { return nil }
-    let systemInfoJSON = JSON(data: data)
-    guard let json = systemInfoJSON["data"].dictionaryObject else { return nil }
+    let systemInformation = feeds.first { $0.type == .systemInformation }
+    guard let systemInformationFeed = systemInformation else { return nil }
+    let systemInfoJSON = get(systemInformationFeed.url.absoluteString)
+    guard let json = systemInfoJSON?["data"].dictionaryObject else { return nil }
     return GBFSSystemInformation(json: json)
 }
 
 func systemPricingPlan(feeds: [GBFSFeed]) -> [GBFSSystemPricingPlan]?
 {
-    let systemPricingPlan = feeds.filter { $0.type == .systemPricingPlans }
-    guard let systemPricingPlanFeed = systemPricingPlan.first,
-          let data = try? Data(contentsOf: systemPricingPlanFeed.url)
-    else { return nil }
-    let systemPricingPlanJSON = JSON(data: data)
-    guard let plansJSON = systemPricingPlanJSON["data"]["plans"].arrayObject as? [JSONDictionary]
+    let systemPricingPlan = feeds.first { $0.type == .systemPricingPlans }
+    guard let systemPricingPlanFeed = systemPricingPlan else { return nil }
+    let systemPricingPlanJSON = get(systemPricingPlanFeed.url.absoluteString)
+    guard let plansJSON = systemPricingPlanJSON?["data"]["plans"].arrayObject as? [JSONDictionary]
     else { return nil }
     return plansJSON.flatMap(GBFSSystemPricingPlan.init)
 }
 
 func systemAlert(feeds: [GBFSFeed]) -> [GBFSSystemAlert]?
 {
-    let systemAlert = feeds.filter { $0.type == .systemAlerts }
-    guard let systemAlertFeed = systemAlert.first,
-          let data = try? Data(contentsOf: systemAlertFeed.url)
-    else { return nil }
-    let systemAlertJSON = JSON(data: data)
-    guard let alertsJSON = systemAlertJSON["data"]["alerts"].arrayObject as? [JSONDictionary] else { return nil }
+    let systemAlert = feeds.first { $0.type == .systemAlerts }
+    guard let systemAlertFeed = systemAlert else { return nil }
+    let systemAlertJSON = get(systemAlertFeed.url.absoluteString)
+    guard let alertsJSON = systemAlertJSON?["data"]["alerts"].arrayObject as? [JSONDictionary] else { return nil }
     var alerts = alertsJSON.flatMap(GBFSSystemAlert.init)
     if let stationsInfo = stationInfo(feeds: feeds)
     {
@@ -246,9 +233,8 @@ func closebyStationsJSON(coordinates: Coordinates) -> JSON
         jsonDict = ["network": network!.jsonDict]
     }
     let closeDict: [JSONDictionary]
-    if let data = try? Data(contentsOf: timeZoneURL(lat: coordinates.latitude, long: coordinates.longitude))
+    if let timeZoneJSON = get(timeZoneURL(lat: coordinates.latitude, long: coordinates.longitude).absoluteString)
     {
-        let timeZoneJSON = JSON(data: data)
         closeDict = closeStations!.map{ $0.jsonDict(timeZoneID: timeZoneJSON["timeZoneId"].stringValue) }
     }
     else

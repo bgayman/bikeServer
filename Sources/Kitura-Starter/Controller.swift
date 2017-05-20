@@ -155,9 +155,8 @@ public class Controller {
                 stations = sortedStations(coordinates: Coordinates(latitude: lat, longitude: long), stations: stations)
             }
             context["network"] = network.jsonDict
-            if let data = try? Data(contentsOf: timeZoneURL(lat: network.location.coordinates.latitude, long: network.location.coordinates.longitude))
+            if let timeZoneJSON = get(timeZoneURL(lat: network.location.coordinates.latitude, long: network.location.coordinates.longitude).absoluteString)
             {
-                let timeZoneJSON = JSON(data: data)
                 context["stations"] = stations.map{ $0.jsonDict(timeZoneID: timeZoneJSON["timeZoneId"].stringValue) }
             }
             else
@@ -178,9 +177,8 @@ public class Controller {
             context["network"] = network.jsonDict
             guard var stats = stations(href: href) else { return }
             stats = stats.filter({ $0.id == stationID })
-            if let data = try? Data(contentsOf: timeZoneURL(lat: network.location.coordinates.latitude, long: network.location.coordinates.longitude))
+            if let timeZoneJSON = get(timeZoneURL(lat: network.location.coordinates.latitude, long: network.location.coordinates.longitude).absoluteString)
             {
-                let timeZoneJSON = JSON(data: data)
                 context["stations"] = stats.map{ $0.jsonDict(timeZoneID: timeZoneJSON["timeZoneId"].stringValue) }
             }
             else
@@ -201,9 +199,8 @@ public class Controller {
             context["network"] = network.jsonDict
             guard var stats = stations(href: href) else { return }
             stats = stats.filter({ $0.id == stationID })
-            if let data = try? Data(contentsOf: timeZoneURL(lat: network.location.coordinates.latitude, long: network.location.coordinates.longitude))
+            if let timeZoneJSON = get(timeZoneURL(lat: network.location.coordinates.latitude, long: network.location.coordinates.longitude).absoluteString)
             {
-                let timeZoneJSON = JSON(data: data)
                 context["station"] = stats.map{ $0.jsonDict(timeZoneID: timeZoneJSON["timeZoneId"].stringValue) }
             }
             else
