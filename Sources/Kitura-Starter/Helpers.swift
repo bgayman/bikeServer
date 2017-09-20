@@ -11,17 +11,12 @@ import SwiftyJSON
 import MySQL
 import LoggerAPI
 
-var networkData: JSON?
 
 var networkJSON: JSON?
 {
-    if let networkData = networkData
-    {
-        return networkData
-    }
-    guard let data = get(Constants.NetworkURL.absoluteString) else { return nil }
-    networkData = data
-    return data
+    guard let data = try? Data(contentsOf: Constants.NetworkURL) else { return nil }
+    let networkData = JSON(data: data)
+    return networkData
 }
 
 var networks: [BikeNetwork]?
@@ -39,7 +34,8 @@ func network(for id: String) -> BikeNetwork?
 
 func stationJSON(href: String) -> JSON?
 {
-    return get("\(Constants.BaseURL)\(href)")
+    guard let data = try? Data(contentsOf: URL(string: "\(Constants.BaseURL)\(href)")!) else { return nil }
+    return JSON(data: data)
 }
 
 func feeds(gbfsHref: URL?) -> [GBFSFeed]?

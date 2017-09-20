@@ -12,30 +12,7 @@ import SwiftyJSON
 
 func get(_ url: String) -> JSON?
 {
-    var responseBody = Data()
-    let _ = HTTP.get(url)
-    { (response) in
-        if let response = response
-        {
-            guard response.statusCode == .OK else { return }
-            do
-            {
-                _ = try? response.readAllData(into: &responseBody)
-            }
-            catch
-            {
-            
-            }
-        }
-    }
-    
-    if responseBody.count > 0
-    {
-        let json = JSON(data: responseBody)
-        return json
-    }
-    else
-    {
-        return nil
-    }
+    guard let newURL = URL(string: url),
+          let data = try? Data(contentsOf: newURL) else { return nil }
+    return JSON(data: data)
 }

@@ -18,15 +18,16 @@ import Kitura
 import KituraSession
 import SwiftyJSON
 import LoggerAPI
-import CloudFoundryEnv
 import KituraStencil
 import Foundation
 import Dispatch
+import CloudEnvironment
+
 
 public class Controller {
     
     let router: Router
-    let appEnv: AppEnv
+    let cloudEnv: CloudEnv
     let dispatchTimer: DispatchSourceTimer
     
     let historyNetworks = ["citi-bike-nyc",
@@ -50,23 +51,24 @@ public class Controller {
     
     var port: Int
     {
-        get { return appEnv.port }
+        get { return cloudEnv.port }
     }
     
     var url: String
     {
-        get { return appEnv.url }
+        get { return cloudEnv.url }
     }
     
     init() throws
     {
         let queue = DispatchQueue(label: "com.bradgayman.bikeshare")
         self.dispatchTimer = DispatchSource.makeTimerSource(queue: queue)
-        appEnv = try CloudFoundryEnv.getAppEnv()
         
+        cloudEnv = CloudEnv()
+
         // All web apps need a Router instance to define routes
         router = Router()
-                
+        
         // Basic GET request
         router.get("/hello", handler: getHello)
         
